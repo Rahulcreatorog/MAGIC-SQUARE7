@@ -1,0 +1,233 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic Square Adventure</title>
+
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    text-align:center;
+    color:white;
+    background: linear-gradient(270deg,#ff00cc,#3333ff,#00ffcc,#ffcc00);
+    background-size: 800% 800%;
+    animation: bg 10s infinite alternate;
+}
+@keyframes bg {0%{background-position:left;}100%{background-position:right;}}
+
+.card {
+    background: rgba(0,0,0,0.6);
+    margin:10px;
+    padding:15px;
+    border-radius:15px;
+}
+
+.grid {
+    display:grid;
+    gap:5px;
+    justify-content:center;
+    margin:15px;
+}
+
+.cell {
+    width:65px;
+    height:65px;
+    border:2px solid white;
+    line-height:65px;
+    font-size:22px;
+    background: rgba(255,255,255,0.2);
+}
+
+.num {
+    padding:10px;
+    margin:5px;
+    background:orange;
+    border-radius:8px;
+    display:inline-block;
+    cursor:pointer;
+}
+
+/* small sidebar */
+.sidebar {
+    position:fixed;
+    bottom:10px;
+    right:10px;
+    background:rgba(0,0,0,0.7);
+    padding:6px;
+    border-radius:8px;
+    font-size:12px;
+}
+</style>
+
+<script>
+let size = 3;
+let level = 1;
+let score = 0;
+let selectedNumber = null;
+
+// select number (mobile tap)
+function selectNumber(el){
+    selectedNumber = el;
+    document.querySelectorAll(".num").forEach(n=>n.style.border="none");
+    el.style.border="2px solid red";
+}
+
+// place number
+function placeNumber(cell){
+    if(selectedNumber && cell.innerText==""){
+        cell.innerText = selectedNumber.innerText;
+        selectedNumber.style.display="none";
+        selectedNumber = null;
+    }
+}
+
+// create grid
+function createGrid(){
+    let grid = document.getElementById("grid");
+    grid.innerHTML="";
+    grid.style.gridTemplateColumns=`repeat(${size},65px)`;
+
+    for(let i=0;i<size*size;i++){
+        let d=document.createElement("div");
+        d.className="cell";
+        d.onclick=function(){placeNumber(d)};
+        grid.appendChild(d);
+    }
+}
+
+// numbers
+function numbers(){
+    let n=document.getElementById("numbers");
+    n.innerHTML="";
+
+    for(let i=1;i<=size*size;i++){
+        let s=document.createElement("span");
+        s.className="num";
+        s.innerText=i;
+        s.onclick=function(){selectNumber(s)};
+        n.appendChild(s);
+    }
+}
+
+// start game
+function startGame(s){
+    size=s;
+    level=1;
+    score=0;
+    document.getElementById("menu").style.display="none";
+    loadLevel();
+}
+
+// load level
+function loadLevel(){
+    createGrid();
+    numbers();
+    let sum = size*(size*size+1)/2;
+    document.getElementById("goal").innerText="🎯 Goal: "+sum;
+}
+
+// check
+function check(){
+    let cells=document.querySelectorAll(".cell");
+    let nums=[...cells].map(x=>Number(x.innerText));
+    let target=size*(size*size+1)/2;
+    let correct=true;
+
+    // rows
+    for(let i=0;i<size;i++){
+        let sum=0;
+        for(let j=0;j<size;j++) sum+=nums[i*size+j];
+        if(sum!==target) correct=false;
+    }
+
+    // columns
+    for(let i=0;i<size;i++){
+        let sum=0;
+        for(let j=0;j<size;j++) sum+=nums[j*size+i];
+        if(sum!==target) correct=false;
+    }
+
+    // diagonals
+    let d1=0,d2=0;
+    for(let i=0;i<size;i++){
+        d1+=nums[i*size+i];
+        d2+=nums[i*size+(size-1-i)];
+    }
+    if(d1!==target||d2!==target) correct=false;
+
+    if(correct){
+        score+=10;
+        level++;
+        alert("🎉 Correct! Score: "+score);
+
+        if(level>25){
+            alert("🏆 Completed 25 levels! More coming soon!");
+            showMenu();
+        } else {
+            loadLevel();
+        }
+    } else {
+        alert("❌ Wrong, try again!");
+    }
+}
+
+// reset
+function reset(){
+    document.querySelectorAll(".cell").forEach(c=>c.innerText="");
+    document.querySelectorAll(".num").forEach(n=>n.style.display="inline-block");
+}
+
+// hint
+function hint(){
+    let sum = size*(size*size+1)/2;
+    alert("💡 Each row/column/diagonal = "+sum);
+}
+
+// menu
+function showMenu(){
+    document.getElementById("menu").style.display="block";
+    document.getElementById("grid").innerHTML="";
+    document.getElementById("numbers").innerHTML="";
+}
+</script>
+</head>
+
+<body>
+
+<h2>😈 Magic Square Adventure</h2>
+
+<!-- MENU -->
+<div id="menu" class="card">
+<h3>Select Grid</h3>
+<button onclick="startGame(2)">2x2</button>
+<button onclick="startGame(3)">3x3</button>
+<button onclick="startGame(4)">4x4</button>
+</div>
+
+<!-- GAME -->
+<div class="card">
+<p id="goal"></p>
+<p>🏆 Score: <span id="score">0</span></p>
+</div>
+
+<div id="grid" class="grid"></div>
+<div id="numbers"></div>
+
+<div class="card">
+<button onclick="check()">Check</button>
+<button onclick="reset()">Reset</button>
+<button onclick="hint()">Hint</button>
+<button onclick="showMenu()">Menu</button>
+</div>
+
+<!-- SMALL SIDEBAR -->
+<div class="sidebar">
+<p>📱 Multiplayer?</p>
+<a href="#"><button style="font-size:10px;">Get App</button></a>
+</div>
+
+</body>
+</html>
+```
